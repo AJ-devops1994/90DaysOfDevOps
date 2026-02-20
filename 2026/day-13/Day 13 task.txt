@@ -1,0 +1,60 @@
+Day 13 task:
+
+#To create 1 single volume and attach directly to the server: 
+lsblk
+df -h
+cd mnt
+mkdir data
+sudo su
+ls
+cd data
+ls
+lsblk --> to see all the volumes attached to the server
+mount /dev/nvme1n1 /mnt/data --> it will give an error at this time
+mkfs -t ext4 /dev/nvme1n1 -->will format the volume
+mount /dev/nvme1n1 /mnt/data --> this will mount the file system to the path /mnt/data
+df -h --> we will be able to see the path where the volume has been mounted(only mounted filesystems will be visible)
+umount /mnt/data --> this will un mount the file system from the path /mnt/data
+
+
+
+#To create multiple volumes, create physical volumes out of them, then creating volume group and then create multiple locgical volumes out of it
+lvm
+pvcreate /dev/nvme2n1 /dev/nvme1n1 --> 2 create 2 physical volumes out of 2 EBS volumes: /dev/nvme2n1 /dev/nvme1n1
+vgcreate anj_vg /dev/nvme1n1 /dev/nvme2n1 --> create 1 volume group out of 2 physical volumes i.e. /dev/nvme1n1 /dev/nvme2n1
+lvcreate -L 8G anj_vg -n anj_devops_lv --> create a logical volume of 8 gb out of volume group for devops team
+lvcreate -L 5G anj_vg -n anj_testers_lv --> create a logical volume of 5 gb out of volume group for tester team
+lvcreate -L 2G anj_vg -n anj_others_lv --> create a logical volume of 2 gb out of volume group for other team
+pvs --> will give the details of physical volumes
+vgs --> will give the details of volume groups
+lvs --> will give the details of logical volumes
+pvdisplay
+vgdisplay
+lvdisplay
+mkfs -t ext4 /dev/anj_vg/anj_others_lv
+mkfs -t ext4 /dev/anj_vg/anj_devops_lv
+mkfs -t ext4 /dev/anj_vg/anj_tester_lv
+lsblk
+mkdir -p testers
+mkfs -t ext4 /dev/anj_vg/anj_testers_lv
+mount /dev/anj_vg/anj_testers_lv /mnt/testers
+mkdir -p devops
+mkfs -t ext4 /dev/anj_vg/anj_devops_lv
+mount /dev/anj_vg/anj_devops_lv /mnt/devops/
+mkdir -p others
+mkfs -t ext4 /dev/anj_vg/anj_others_lv
+mount /dev/anj_vg/anj_other_lv /mnt/others/
+df -h --> now this will show all the mount points for logical volumes, along with volume groups(logical volume is a part of)
+
+lvextend -L +200M /dev/anj_vg/anj_devops_lv
+resize2fs /dev/anj_vg/anj_devops_lv
+df -h /mnt/app-data
+
+
+
+
+openclaw
+
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   
